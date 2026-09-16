@@ -1,0 +1,27 @@
+{
+  "name": "nebula-proxy",
+  "version": "1.0.0",
+  "description": "A zero-dependency HTTP/HTTPS forward proxy with a live dashboard.",
+  "type": "module",
+  "bin": {
+    "nebula": "./bin/nebula.js"
+  },
+  "main": "./src/server.js",
+  "scripts": {
+    "start": "node bin/nebula.js",
+    "dev": "node bin/nebula.js --verbose",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "proxy",
+    "http-proxy",
+    "forward-proxy",
+    "dashboard",
+    "observability"
+  ],
+  "license": "MIT",
+  "dependencies": {}
+}
