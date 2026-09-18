@@ -4,162 +4,287 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>nebula</title>
-<meta name="description" content="A web proxy — type a site or a search and open it through nebula.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%233987e5'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23d95926' stroke-width='2.5' stroke-dasharray='34 14'/%3E%3C/svg%3E">
+<meta name="description" content="A web proxy — open any page from one address, or search the web.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%235b9dff'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23ff8a4c' stroke-width='2.5' stroke-dasharray='34 14'/%3E%3C/svg%3E">
 <style>
-  :root {
-    color-scheme: dark;
-    --page:#0b0c10; --panel:#15161c; --panel-2:#1c1e26;
-    --ink:#f4f5f7; --ink-2:#b8bac4; --muted:#7c7e8a;
-    --line:rgba(255,255,255,.09);
-    --blue:#3987e5; --orange:#eb6834; --violet:#8b7fe8;
-    --glow-a:rgba(57,135,229,.30); --glow-b:rgba(235,104,52,.20);
-    --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+  :root{
+    --bg:#070912; --bg-2:#0a0e1c;
+    --ink:#eef1f8; --ink-2:#aab1cc; --muted:#6b7192;
+    --panel:rgba(255,255,255,.045); --panel-2:rgba(255,255,255,.03);
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.06);
+    --blue:#5b9dff; --blue-deep:#3f7ae0; --ember:#ff8a4c; --violet:#9a86ff;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
-  * { box-sizing:border-box; }
-  html,body { height:100%; }
-  body {
-    margin:0; background:var(--page); color:var(--ink);
-    font-family:var(--sans); line-height:1.55;
-    -webkit-font-smoothing:antialiased;
-    display:flex; flex-direction:column; min-height:100%;
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; color:var(--ink); font-family:var(--sans); line-height:1.55;
+    background:var(--bg); -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; min-height:100%; overflow-x:hidden;
   }
-  body::before {
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background:
-      radial-gradient(58% 50% at 22% -8%, var(--glow-a), transparent 60%),
-      radial-gradient(48% 44% at 90% 4%, var(--glow-b), transparent 60%);
-    filter:blur(30px);
-  }
-  main {
-    position:relative; z-index:1; flex:1 0 auto;
-    width:100%; max-width:640px; margin:0 auto;
-    padding:14vh 20px 40px; display:flex; flex-direction:column; align-items:center;
-  }
-  @media (max-height:640px){ main{ padding-top:7vh; } }
 
-  .brand { display:flex; align-items:center; gap:11px; margin-bottom:26px; }
-  .mark { width:34px; height:34px; }
-  .mark-core { fill:var(--blue); }
-  .mark-ring { stroke:var(--orange); transform-origin:16px 16px; animation:orbit 9s linear infinite; }
-  @keyframes orbit { to { transform:rotate(360deg); } }
-  .wordmark {
-    font-size:30px; font-weight:680; letter-spacing:-.02em;
-    background:linear-gradient(92deg,#5aa0ff,#c58bff 55%,#ff9f74);
+  /* Layered space backdrop: canvas stars + soft nebula glows + vignette. */
+  #stars{position:fixed; inset:0; z-index:0; pointer-events:none;}
+  .aurora{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .aurora::before,.aurora::after{
+    content:""; position:absolute; border-radius:50%; filter:blur(70px); opacity:.5;
+  }
+  .aurora::before{
+    width:60vw; height:60vw; left:-14vw; top:-22vw;
+    background:radial-gradient(circle at 50% 50%, rgba(63,122,224,.42), transparent 62%);
+    animation:drift1 26s ease-in-out infinite alternate;
+  }
+  .aurora::after{
+    width:52vw; height:52vw; right:-16vw; top:-10vw;
+    background:radial-gradient(circle at 50% 50%, rgba(255,138,76,.24), transparent 62%);
+    animation:drift2 32s ease-in-out infinite alternate;
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% -10%, transparent 40%, rgba(4,5,12,.75) 100%);
+  }
+  @keyframes drift1{to{transform:translate(6vw,4vw) scale(1.08);}}
+  @keyframes drift2{to{transform:translate(-5vw,3vw) scale(1.1);}}
+
+  header{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:960px; margin:0 auto; width:100%; padding:20px 24px;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .mark{width:26px; height:26px; flex:none;}
+  .mark .core{fill:var(--blue);}
+  .mark .ring{stroke:var(--ember); transform-origin:16px 16px; animation:spin 12s linear infinite;}
+  .mark .ring2{stroke:var(--violet); opacity:.55; transform-origin:16px 16px; animation:spin 8s linear infinite reverse;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .brand b{font-size:17px; font-weight:700; letter-spacing:-.02em;}
+  .kbd-hint{
+    font-size:12px; color:var(--muted); display:inline-flex; gap:7px; align-items:center;
+  }
+  .kbd-hint kbd{
+    font-family:var(--mono); font-size:11px; color:var(--ink-2);
+    background:var(--panel); border:1px solid var(--line); border-bottom-width:2px;
+    border-radius:6px; padding:1px 6px; min-width:18px; text-align:center;
+  }
+
+  main{
+    position:relative; z-index:2; flex:1 0 auto;
+    width:100%; max-width:720px; margin:0 auto; padding:9vh 24px 48px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  @media (max-height:720px){ main{padding-top:5vh;} }
+
+  .eyebrow{
+    font-size:11.5px; font-weight:600; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--blue); margin:0 0 18px;
+    display:inline-flex; align-items:center; gap:9px;
+  }
+  .eyebrow::before,.eyebrow::after{content:""; width:22px; height:1px; background:linear-gradient(90deg,transparent,var(--line));}
+  .eyebrow::before{background:linear-gradient(270deg,transparent,var(--line));}
+
+  h1{
+    margin:0 0 14px; font-size:clamp(32px,6.4vw,50px); line-height:1.04;
+    font-weight:720; letter-spacing:-.035em; text-wrap:balance;
+  }
+  h1 .accent{
+    background:linear-gradient(96deg,#7fb2ff,#c6a4ff 60%,#ffb185);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
+  .lede{margin:0 0 32px; color:var(--ink-2); font-size:16px; max-width:46ch; text-wrap:pretty;}
 
-  .tagline { margin:0 0 30px; color:var(--ink-2); text-align:center; font-size:15px; max-width:34ch; text-wrap:balance; }
-
-  form { width:100%; }
-  .bar {
-    display:flex; align-items:center; gap:10px;
-    background:var(--panel); border:1px solid var(--line); border-radius:15px;
-    padding:7px 7px 7px 16px;
-    box-shadow:0 18px 46px -22px rgba(0,0,0,.9);
-    transition:border-color .15s ease, box-shadow .15s ease;
+  form{width:100%; max-width:600px;}
+  .bar{
+    display:flex; align-items:center; gap:8px; padding:8px 8px 8px 18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+    border:1px solid var(--line); border-radius:18px;
+    box-shadow:0 24px 60px -28px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05);
+    transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
   }
-  .bar:focus-within { border-color:rgba(57,135,229,.6); box-shadow:0 0 0 4px rgba(57,135,229,.14), 0 18px 46px -22px rgba(0,0,0,.9); }
-  .bar svg.lead { flex:none; color:var(--muted); }
+  .bar:focus-within{
+    border-color:rgba(91,157,255,.65);
+    box-shadow:0 0 0 4px rgba(91,157,255,.16), 0 28px 66px -28px rgba(0,0,0,.95);
+    transform:translateY(-1px);
+  }
+  .bar .glyph{flex:none; color:var(--muted); transition:color .18s;}
+  .bar:focus-within .glyph{color:var(--blue);}
   input[type=search]{
-    flex:1; min-width:0; border:0; outline:0; background:transparent;
-    color:var(--ink); font:inherit; font-size:16px; padding:8px 0;
+    flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink);
+    font:inherit; font-size:17px; padding:12px 0;
   }
-  input[type=search]::placeholder { color:var(--muted); }
-  input[type=search]::-webkit-search-cancel-button{ -webkit-appearance:none; }
-  button {
-    flex:none; border:0; cursor:pointer; font:inherit; font-weight:600; font-size:14px;
-    color:#fff; background:var(--blue); padding:11px 20px; border-radius:11px;
-    transition:background .15s ease, transform .05s ease;
+  input[type=search]::placeholder{color:var(--muted);}
+  input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;}
+  .go{
+    flex:none; border:0; cursor:pointer; font:inherit; font-weight:650; font-size:15px; color:#08122a;
+    background:linear-gradient(180deg,#7fb2ff,var(--blue)); padding:12px 22px; border-radius:12px;
+    display:inline-flex; align-items:center; gap:8px;
+    box-shadow:0 8px 20px -8px rgba(91,157,255,.7); transition:filter .15s, transform .05s;
   }
-  button:hover { background:#2f79cf; }
-  button:active { transform:translateY(1px); }
-  button:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  .go:hover{filter:brightness(1.07);}
+  .go:active{transform:translateY(1px);}
+  .go:focus-visible{outline:2px solid #fff; outline-offset:2px;}
 
-  .chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; }
-  .chip {
-    font-size:12.5px; color:var(--ink-2); text-decoration:none;
-    background:var(--panel-2); border:1px solid var(--line);
-    padding:6px 12px; border-radius:999px; transition:color .15s, border-color .15s;
+  .chips{display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-top:20px;}
+  .chip{
+    font-size:13px; color:var(--ink-2); text-decoration:none;
+    background:var(--panel-2); border:1px solid var(--line-2); padding:7px 13px; border-radius:999px;
+    display:inline-flex; align-items:center; gap:7px; transition:color .15s, border-color .15s, background .15s;
   }
-  .chip:hover { color:var(--ink); border-color:rgba(255,255,255,.22); }
+  .chip:hover{color:var(--ink); border-color:rgba(91,157,255,.5); background:rgba(91,157,255,.08);}
+  .chip .dot{width:5px; height:5px; border-radius:50%; background:var(--blue);}
+  .chip.search .dot{background:var(--ember);}
 
-  .how { margin-top:52px; width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-  .card {
-    background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:15px;
+  .steps{
+    margin-top:64px; width:100%; max-width:640px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px; text-align:left;
   }
-  .card .n { font-family:var(--mono); font-size:11px; color:var(--muted); }
-  .card h3 { margin:8px 0 5px; font-size:13.5px; }
-  .card p { margin:0; font-size:12.5px; color:var(--ink-2); line-height:1.5; }
-  @media (max-width:560px){ .how{ grid-template-columns:1fr; } main{ padding-top:9vh; } }
+  .step{
+    position:relative; background:var(--panel-2); border:1px solid var(--line-2);
+    border-radius:15px; padding:17px 16px 16px;
+  }
+  .step .idx{
+    font-family:var(--mono); font-size:11px; color:var(--blue);
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:7px; background:rgba(91,157,255,.12);
+    border:1px solid rgba(91,157,255,.28); margin-bottom:11px;
+  }
+  .step h3{margin:0 0 5px; font-size:14px; font-weight:640;}
+  .step p{margin:0; font-size:12.5px; color:var(--ink-2); line-height:1.5;}
+  .step:not(:last-child)::after{
+    content:""; position:absolute; right:-8px; top:50%; width:8px; height:1px; background:var(--line);
+  }
+  @media (max-width:560px){
+    .steps{grid-template-columns:1fr; gap:10px;}
+    .step:not(:last-child)::after{display:none;}
+    main{padding-top:6vh;}
+    .kbd-hint{display:none;}
+  }
 
-  footer {
-    position:relative; z-index:1; flex:none;
-    max-width:640px; margin:0 auto; padding:26px 20px 34px; width:100%;
-    color:var(--muted); font-size:12px; line-height:1.6; text-align:center;
+  footer{
+    position:relative; z-index:2; flex:none; width:100%; max-width:720px;
+    margin:0 auto; padding:28px 24px 36px; color:var(--muted); font-size:12px;
+    line-height:1.65; text-align:center;
   }
-  footer code { font-family:var(--mono); background:var(--panel-2); padding:1px 6px; border-radius:5px; color:var(--ink-2); }
-  footer .note { border-top:1px solid var(--line); padding-top:16px; }
-  footer a { color:var(--blue); }
+  footer .rule{height:1px; background:var(--line-2); margin:0 auto 18px; max-width:120px;}
+  footer code{font-family:var(--mono); background:var(--panel); border:1px solid var(--line-2); padding:1px 6px; border-radius:5px; color:var(--ink-2);}
+
+  @media (prefers-reduced-motion:reduce){
+    .mark .ring,.mark .ring2,.aurora::before,.aurora::after{animation:none;}
+  }
 </style>
 </head>
 <body>
-  <main>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header>
     <div class="brand">
       <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-        <circle class="mark-core" cx="16" cy="16" r="6"/>
-        <circle class="mark-ring" cx="16" cy="16" r="12.5" fill="none" stroke-width="2.5" stroke-dasharray="34 14" stroke-linecap="round"/>
+        <circle class="core" cx="16" cy="16" r="5.5"/>
+        <circle class="ring2" cx="16" cy="16" r="9" fill="none" stroke-width="1.6" stroke-dasharray="16 10" stroke-linecap="round"/>
+        <circle class="ring" cx="16" cy="16" r="13" fill="none" stroke-width="2.4" stroke-dasharray="34 15" stroke-linecap="round"/>
       </svg>
-      <span class="wordmark">nebula</span>
+      <b>nebula</b>
     </div>
+    <span class="kbd-hint">Press <kbd>/</kbd> to search</span>
+  </header>
 
-    <p class="tagline">Open a site or run a search through the proxy. Type a web address, or anything to search for.</p>
+  <main>
+    <p class="eyebrow">Web proxy</p>
+    <h1>Open the web from <span class="accent">one address</span>.</h1>
+    <p class="lede">Type a site or a search. nebula loads the page on its side and hands it back
+      through its own address — so your browser only ever talks to nebula.</p>
 
     <form action="/go" method="get" role="search" autocomplete="off">
       <div class="bar">
-        <svg class="lead" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
-          <path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <svg class="glyph" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="m20 20-3.4-3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <input type="search" name="q" placeholder="Search or enter a website" aria-label="Search or enter a website" autofocus>
-        <button type="submit">Go</button>
+        <input id="q" type="search" name="q" placeholder="Enter a website, or search the web" aria-label="Enter a website or search the web" autofocus>
+        <button class="go" type="submit">
+          Go
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h13m-5-6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </form>
 
-    <nav class="chips" aria-label="Shortcuts">
-      <a class="chip" href="/go?q=wikipedia.org">wikipedia.org</a>
-      <a class="chip" href="/go?q=news.ycombinator.com">news.ycombinator.com</a>
-      <a class="chip" href="/go?q=example.com">example.com</a>
-      <a class="chip" href="/go?q=how+does+a+web+proxy+work">how does a web proxy work</a>
+    <nav class="chips" aria-label="Try one">
+      <a class="chip" href="/go?q=wikipedia.org"><span class="dot"></span>wikipedia.org</a>
+      <a class="chip" href="/go?q=news.ycombinator.com"><span class="dot"></span>Hacker News</a>
+      <a class="chip" href="/go?q=example.com"><span class="dot"></span>example.com</a>
+      <a class="chip search" href="/go?q=how+do+web+proxies+work"><span class="dot"></span>how do web proxies work</a>
     </nav>
 
-    <section class="how" aria-label="How it works">
-      <div class="card">
-        <span class="n">01</span>
-        <h3>You ask nebula</h3>
-        <p>Your browser only ever talks to this page — one address, one connection.</p>
-      </div>
-      <div class="card">
-        <span class="n">02</span>
-        <h3>nebula fetches</h3>
-        <p>The server loads the target page and rewrites its links to route back through here.</p>
-      </div>
-      <div class="card">
-        <span class="n">03</span>
-        <h3>You read it</h3>
-        <p>The page comes back served from nebula, so you keep browsing without leaving.</p>
-      </div>
+    <section class="steps" aria-label="How it works">
+      <div class="step"><span class="idx">1</span><h3>You ask</h3><p>Your browser makes one connection — to nebula, nowhere else.</p></div>
+      <div class="step"><span class="idx">2</span><h3>nebula fetches</h3><p>It loads the target page and rewrites every link to route back through here.</p></div>
+      <div class="step"><span class="idx">3</span><h3>You read</h3><p>The page returns served from nebula, so you keep browsing without leaving.</p></div>
     </section>
   </main>
 
   <footer>
-    <p class="note">
-      nebula is a small, self-hosted web proxy — you run it yourself with
-      <code>node bin/unblock.js</code>. It's built for reading static and lightly-scripted
-      sites; logins, heavy web apps and streaming video are out of scope. Use it in line with
-      the rules of whatever network you're on.
-    </p>
+    <div class="rule"></div>
+    <p>A small, self-hosted web proxy you run yourself with <code>node bin/unblock.js</code>. Built for reading
+      static and lightly-scripted sites; logins, heavy web apps and video are out of scope. Use it in line with
+      the rules of whatever network you're on.</p>
   </footer>
+
+  <script>
+    // "/" focuses the search box, the way a real search app behaves.
+    const q = document.getElementById('q');
+    addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    });
+
+    // A quiet drifting starfield for depth. Respects reduced-motion and pauses when hidden.
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let stars = [];
+    let dpr = 1;
+
+    function seed() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      const count = Math.min(120, Math.round((innerWidth * innerHeight) / 14000));
+      stars = Array.from({ length: count }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: (Math.random() * 1.3 + 0.3) * dpr,
+        a: Math.random() * 0.5 + 0.2,
+        tw: Math.random() * 0.02 + 0.004,
+        vy: (Math.random() * 0.14 + 0.03) * dpr,
+        ph: Math.random() * Math.PI * 2,
+      }));
+    }
+
+    function frame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const s of stars) {
+        s.ph += s.tw;
+        const alpha = s.a + Math.sin(s.ph) * 0.18;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(200,215,255,' + Math.max(0, alpha).toFixed(3) + ')';
+        ctx.fill();
+        if (!reduce) {
+          s.y += s.vy;
+          if (s.y > canvas.height + 2) { s.y = -2; s.x = Math.random() * canvas.width; }
+        }
+      }
+      if (!reduce && !document.hidden) requestAnimationFrame(frame);
+    }
+
+    seed();
+    frame();
+    let t;
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { seed(); if (reduce) frame(); }, 150); });
+    if (!reduce) document.addEventListener('visibilitychange', () => { if (!document.hidden) frame(); });
+  </script>
 </body>
 </html>

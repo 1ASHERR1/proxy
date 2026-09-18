@@ -77,20 +77,42 @@ function clientPatch(target) {
     + 'return wo.apply(this,[u].concat([].slice.call(arguments,1)));};'
     + '})();</script>'
     // A tiny, high-z-index way home that borrows nothing from the page's styles.
-    + '<a href="/" style="position:fixed;z-index:2147483647;right:14px;bottom:14px;'
-    + 'font:600 12px system-ui,sans-serif;color:#fff;background:#2a78d6;text-decoration:none;'
-    + 'padding:7px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.28)" '
-    + 'aria-label="Back to nebula">◈ nebula</a>';
+    + '<a href="/" aria-label="Back to nebula home" '
+    + 'style="position:fixed;z-index:2147483647;left:16px;bottom:16px;display:inline-flex;'
+    + 'align-items:center;gap:8px;padding:8px 14px 8px 10px;'
+    + 'font:600 12.5px/1 system-ui,-apple-system,sans-serif;color:#eef1f8;text-decoration:none;'
+    + 'background:rgba(10,14,28,.82);border:1px solid rgba(255,255,255,.14);border-radius:999px;'
+    + '-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);'
+    + 'box-shadow:0 10px 26px -10px rgba(0,0,0,.75)">'
+    + '<svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">'
+    + '<circle cx="16" cy="16" r="5.5" fill="#5b9dff"/>'
+    + '<circle cx="16" cy="16" r="12" fill="none" stroke="#ff8a4c" stroke-width="2.4" stroke-dasharray="30 14" stroke-linecap="round"/>'
+    + '</svg>nebula</a>';
 }
 
 function errorPage(res, code, title, detail) {
   const body = `<!doctype html><meta charset="utf-8"><title>${title}</title>`
-    + '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;'
-    + 'font-family:system-ui,sans-serif;background:#0d0d0d;color:#e8e8e6}'
-    + '.box{max-width:30rem;padding:2rem;text-align:center}h1{font-size:1.2rem;margin:0 0 .5rem}'
-    + 'p{color:#9a9a94;line-height:1.6;margin:0 0 1.25rem}a{color:#3987e5}'
-    + 'code{background:#1e1e1c;padding:2px 6px;border-radius:5px;font-size:.85em}</style>'
-    + `<div class="box"><h1>${title}</h1><p>${detail}</p><a href="/">← Back to nebula</a></div>`;
+    + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+    + '<style>:root{color-scheme:dark}*{box-sizing:border-box}'
+    + 'body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;'
+    + 'font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#070912;color:#eef1f8;'
+    + 'background-image:radial-gradient(60vw 42vw at 50% -12%,rgba(63,122,224,.24),transparent 60%)}'
+    + '.box{max-width:30rem;text-align:center}'
+    + '.mk{width:46px;height:46px;margin:0 auto 20px;display:block}'
+    + '.mk .r{transform-origin:16px 16px;animation:s 12s linear infinite}'
+    + '@keyframes s{to{transform:rotate(360deg)}}'
+    + '@media (prefers-reduced-motion:reduce){.mk .r{animation:none}}'
+    + 'h1{font-size:1.3rem;font-weight:680;letter-spacing:-.02em;margin:0 0 .55rem}'
+    + 'p{color:#aab1cc;line-height:1.62;margin:0 0 1.5rem}'
+    + 'a{display:inline-block;color:#08122a;text-decoration:none;font-weight:640;'
+    + 'background:linear-gradient(180deg,#7fb2ff,#5b9dff);padding:10px 20px;border-radius:12px;'
+    + 'box-shadow:0 10px 24px -10px rgba(91,157,255,.7)}'
+    + 'code{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgba(255,255,255,.06);'
+    + 'border:1px solid rgba(255,255,255,.1);padding:2px 6px;border-radius:6px;font-size:.85em;color:#cdd4ea}</style>'
+    + '<div class="box"><svg class="mk" viewBox="0 0 32 32" aria-hidden="true">'
+    + '<circle cx="16" cy="16" r="5.5" fill="#5b9dff"/>'
+    + '<circle class="r" cx="16" cy="16" r="12.5" fill="none" stroke="#ff8a4c" stroke-width="2.4" stroke-dasharray="34 15" stroke-linecap="round"/>'
+    + `</svg><h1>${title}</h1><p>${detail}</p><a href="/">Back to nebula</a></div>`;
   res.writeHead(code, { 'content-type': 'text/html; charset=utf-8' });
   res.end(body);
 }
