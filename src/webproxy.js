@@ -8,7 +8,7 @@
  *   *   /p/<target-url> → fetch, rewrite, and serve the target
  *
  * Static pages and progressively-enhanced sites work well. Login-walled sites,
- * heavy single-page apps, and streaming video are out of scope for a project
+ * heavily interactive sites, and streaming video are out of scope for a project
  * this size — the README says so plainly.
  */
 

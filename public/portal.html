@@ -229,12 +229,12 @@
   <footer>
     <div class="rule"></div>
     <p>A small, self-hosted web proxy you run yourself with <code>node bin/unblock.js</code>. Built for reading
-      static and lightly-scripted sites; logins, heavy web apps and video are out of scope. Use it in line with
-      the rules of whatever network you're on.</p>
+      static and lightly-scripted sites; logins, heavily interactive sites and video are out of scope. Use it in
+      line with the rules of whatever network you're on.</p>
   </footer>
 
   <script>
-    // "/" focuses the search box, the way a real search app behaves.
+    // "/" focuses the search box, the way a real search site behaves.
     const q = document.getElementById('q');
     addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }

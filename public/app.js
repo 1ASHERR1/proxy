@@ -14,7 +14,6 @@ const el = {
   endpointText: $('endpoint-text'),
   connection: $('connection'),
   connectionText: $('connection-text'),
-  theme: $('theme'),
 
   heroValue: $('hero-value'),
   heroUnit: $('hero-unit'),
@@ -560,32 +559,6 @@ function connect() {
 }
 
 /* --- chrome --------------------------------------------------------------- */
-
-function readStoredTheme() {
-  try {
-    return localStorage.getItem('nebula-theme');
-  } catch {
-    return null;
-  }
-}
-
-function applyTheme(theme) {
-  if (theme) document.documentElement.dataset.theme = theme;
-  try {
-    if (theme) localStorage.setItem('nebula-theme', theme);
-  } catch {
-    // Private mode or blocked storage: the theme just doesn't persist.
-  }
-  render();
-}
-
-applyTheme(readStoredTheme());
-
-el.theme.addEventListener('click', () => {
-  const current = document.documentElement.dataset.theme
-    ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-});
 
 el.endpoint.addEventListener('click', async () => {
   const url = `http://${el.endpointText.textContent}`;

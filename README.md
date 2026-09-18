@@ -83,9 +83,9 @@ your browser keeps talking to nebula instead of reaching for the origin site.
   sync; cookies are re-scoped to the proxy so they come back to it.
 
 **What works, and what doesn't.** Static and lightly-scripted sites (articles,
-docs, search results, most content sites) read well. Sites behind a login, heavy
-single-page apps, and streaming video are out of scope for a project this size —
-a full web proxy that handles those is a much larger undertaking.
+docs, search results, most content sites) read well. Sites behind a login,
+heavily interactive sites, and streaming video are out of scope for a project
+this size — a full web proxy that handles those is a much larger undertaking.
 
 **A word on blocked networks.** People often reach for a web proxy to get around
 a school or workplace filter. Two honest caveats: doing that is usually against

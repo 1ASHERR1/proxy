@@ -1,90 +1,42 @@
 /* ---------------------------------------------------------------------------
-   Tokens. Light is the base; the dark steps are chosen for the dark surface,
-   not flipped from light. Both the OS setting and the in-page toggle resolve
-   here, and the toggle wins either way.
+   Tokens. One committed deep-space palette, shared with the nebula portal.
+   Chart marks (--series-1/2) use in-band steps of the accent hues so large
+   fills read correctly; the brighter --accent/--ember carry the brand.
    --------------------------------------------------------------------------- */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --page:            #f9f9f7;
-  --surface:         #fcfcfb;
-  --surface-raised:  #ffffff;
+  --page:            #070912;
+  --surface:         #0e1322;
+  --surface-raised:  #151b2e;
 
-  --text-primary:    #0b0b0b;
-  --text-secondary:  #52514e;
-  --text-muted:      #898781;
+  --text-primary:    #eef1f8;
+  --text-secondary:  #aab1cc;
+  --text-muted:      #6b7192;
 
-  --grid:            #e1e0d9;
-  --axis:            #c3c2b7;
-  --border:          rgba(11, 11, 11, 0.10);
-  --wash:            rgba(11, 11, 11, 0.04);
+  --grid:            #1b2338;
+  --axis:            #2a3450;
+  --border:          rgba(255, 255, 255, 0.09);
+  --wash:            rgba(255, 255, 255, 0.045);
 
-  --series-1:        #2a78d6;   /* down */
-  --series-2:        #eb6834;   /* up */
-  --deemphasis:      #c3c2b7;
+  --series-1:        #3987e5;   /* down — validated in-band on --surface */
+  --series-2:        #e0672c;   /* up   — validated in-band on --surface */
+  --accent:          #5b9dff;   /* bright accent / brand */
+  --ember:           #ff8a4c;
+  --deemphasis:      #45507a;
 
   --good:            #0ca30c;
   --warning:         #fab219;
   --serious:         #ec835a;
   --critical:        #d03b3b;
 
-  --glow-a:          rgba(42, 120, 214, 0.18);
-  --glow-b:          rgba(235, 104, 52, 0.12);
+  --glow-a:          rgba(63, 122, 224, 0.30);
+  --glow-b:          rgba(255, 138, 76, 0.16);
 
   --radius:          14px;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
-    color-scheme: dark;
-
-    --page:            #0d0d0d;
-    --surface:         #1a1a19;
-    --surface-raised:  #1f1f1e;
-
-    --text-primary:    #ffffff;
-    --text-secondary:  #c3c2b7;
-    --text-muted:      #898781;
-
-    --grid:            #2c2c2a;
-    --axis:            #383835;
-    --border:          rgba(255, 255, 255, 0.10);
-    --wash:            rgba(255, 255, 255, 0.05);
-
-    --series-1:        #3987e5;
-    --series-2:        #d95926;
-    --deemphasis:      #4a4a46;
-
-    --glow-a:          rgba(57, 135, 229, 0.20);
-    --glow-b:          rgba(217, 89, 38, 0.14);
-  }
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-
-  --page:            #0d0d0d;
-  --surface:         #1a1a19;
-  --surface-raised:  #1f1f1e;
-
-  --text-primary:    #ffffff;
-  --text-secondary:  #c3c2b7;
-  --text-muted:      #898781;
-
-  --grid:            #2c2c2a;
-  --axis:            #383835;
-  --border:          rgba(255, 255, 255, 0.10);
-  --wash:            rgba(255, 255, 255, 0.05);
-
-  --series-1:        #3987e5;
-  --series-2:        #d95926;
-  --deemphasis:      #4a4a46;
-
-  --glow-a:          rgba(57, 135, 229, 0.20);
-  --glow-b:          rgba(217, 89, 38, 0.14);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -102,18 +54,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* The one piece of decoration: a soft aurora behind the page plane. */
+/* Drifting nebula glows, matching the portal. */
 body::before {
   content: "";
   position: fixed;
-  inset: -20% -10% auto -10%;
-  height: 60vh;
+  inset: -22% -12% auto -12%;
+  height: 70vh;
   background:
-    radial-gradient(60% 60% at 20% 0%, var(--glow-a), transparent 70%),
-    radial-gradient(50% 50% at 80% 10%, var(--glow-b), transparent 70%);
-  filter: blur(40px);
+    radial-gradient(46% 60% at 18% 0%, var(--glow-a), transparent 66%),
+    radial-gradient(42% 54% at 86% 6%, var(--glow-b), transparent 66%);
+  filter: blur(60px);
   pointer-events: none;
   z-index: 0;
+}
+
+/* A vignette to seat the content in the dark. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(130% 90% at 50% -8%, transparent 46%, rgba(3, 4, 10, 0.55) 100%);
 }
 
 .visually-hidden {
@@ -142,9 +104,9 @@ body::before {
 .brand { display: flex; align-items: baseline; gap: 9px; }
 
 .mark { width: 24px; height: 24px; align-self: center; }
-.mark-core { fill: var(--series-1); }
+.mark-core { fill: var(--accent); }
 .mark-ring {
-  stroke: var(--series-2);
+  stroke: var(--ember);
   transform-origin: 16px 16px;
   animation: orbit 9s linear infinite;
 }
@@ -175,7 +137,7 @@ body::before {
 .chip-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--series-1);
+  background: var(--accent);
 }
 .chip-action {
   font-family: var(--sans);
