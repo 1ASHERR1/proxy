@@ -1,8 +1,14 @@
 # nebula
 
-A forward proxy for HTTP and HTTPS with a live dashboard. Zero dependencies —
-everything runs on the Node standard library, so there is nothing to install and
-nothing to build.
+Two zero-dependency proxies in one repo — everything runs on the Node standard
+library, so there is nothing to install and nothing to build:
+
+- **`nebula`** — a network **forward proxy** for HTTP and HTTPS, with a live
+  dashboard. Point your system or a program at it with `http_proxy`/`https_proxy`.
+- **`unblock`** — a **web proxy**: a site with a search box that fetches a page
+  server-side and serves it back through its own address, rewriting the page's
+  links so your browser keeps talking to the proxy. This is the "open a blocked
+  site" kind of proxy — no client configuration, you just visit it.
 
 ```
     ███╗   ██╗███████╗██████╗ ██╗   ██╗██╗      █████╗
@@ -30,6 +36,63 @@ curl https://example.com          # tunnelled with CONNECT
 ```
 
 Then open <http://127.0.0.1:8081> to watch the traffic.
+
+## The web proxy
+
+If what you want is "a website where I can open something that's blocked," that's
+the web proxy, not the forward proxy above:
+
+```bash
+node bin/unblock.js            # then open http://127.0.0.1:8090
+```
+
+Open that address, type a site (`wikipedia.org`) or a search (`how tides work`)
+into the box, and go. nebula fetches the page on the server side and serves it
+back from its own address, rewriting every link, image, stylesheet and form so
+your browser keeps talking to nebula instead of reaching for the origin site.
+
+```
+  you ─▶ nebula (one address)  ─▶ the site
+       ◀─ rewritten page       ◀─
+```
+
+**Options**
+
+```
+-p, --port <n>        port to listen on            (default 8090)
+-h, --host <addr>     bind address                 (default 127.0.0.1)
+    --search <url>    search template, %s = query  (default DuckDuckGo html)
+    --upstream <url>  route outbound through another proxy (http://host:port)
+    --ca <file>       extra CA bundle for upstream TLS
+    --insecure        skip upstream TLS verification (last resort)
+-q, --quiet           do not log each fetch
+```
+
+**How it works**
+
+- The address is `/p/` followed by the real URL, e.g.
+  `/p/https://en.wikipedia.org/wiki/Cat`. The server fetches that, decodes gzip /
+  brotli, and rewrites the HTML.
+- URL attributes (`href`, `src`, `srcset`, `action`, `poster`, inline
+  `style` and `<style>` `url(...)`, `<meta refresh>`) are rewritten to point back
+  through `/p/`. Content-Security-Policy and subresource-integrity are stripped so
+  the rewrites and a small injected script can take effect.
+- That injected script patches `fetch`, `XMLHttpRequest` and `window.open` at
+  runtime, so URLs a page builds in JavaScript are proxied too.
+- Redirects are rewritten (not silently followed) so the address bar stays in
+  sync; cookies are re-scoped to the proxy so they come back to it.
+
+**What works, and what doesn't.** Static and lightly-scripted sites (articles,
+docs, search results, most content sites) read well. Sites behind a login, heavy
+single-page apps, and streaming video are out of scope for a project this size —
+a full web proxy that handles those is a much larger undertaking.
+
+**A word on blocked networks.** People often reach for a web proxy to get around
+a school or workplace filter. Two honest caveats: doing that is usually against
+the network's acceptable-use policy, and on a managed device or network it often
+won't work anyway (the device blocks the tool, or the filter recognises the
+traffic). Run this in line with the rules of whatever network you're on. It's
+also just a genuinely good way to learn how the web fits together.
 
 ## The dashboard
 
@@ -139,20 +202,27 @@ The defaults are deliberately narrow.
 npm test
 ```
 
-24 tests covering forwarding, request bodies, status passthrough, header
-hygiene, `CONNECT` tunnelling, rule precedence, authentication, the 502/400
-paths, and the metric bounds.
+68 tests. The forward proxy: forwarding, request bodies, status passthrough,
+header hygiene, `CONNECT` tunnelling, rule precedence, authentication, the
+502/400 paths, metric bounds, and the chart helpers. The web proxy: URL/HTML/CSS
+rewriting, `srcset` and inline styles, CSP/integrity stripping, query
+resolution, and end-to-end fetching (redirects, gzip, cookie scoping, binary
+passthrough, the 502 path).
 
 ## Layout
 
 ```
-bin/nebula.js      CLI: arguments, config, listeners, shutdown
-src/server.js      the proxy — HTTP forwarding and CONNECT tunnelling
+bin/nebula.js      forward-proxy CLI: arguments, config, listeners, shutdown
+bin/unblock.js     web-proxy CLI
+src/server.js      the forward proxy — HTTP forwarding and CONNECT tunnelling
 src/stats.js       bounded metrics: counters, ring buffers, percentiles
 src/rules.js       hostname allow/block matching
 src/dashboard.js   read-only HTTP + SSE surface
 src/log.js         terminal banner and request lines
-public/            the dashboard (no build step)
+src/webproxy.js    the web proxy — fetch, rewrite, serve
+src/rewrite.js     pure URL/HTML/CSS rewriting (unit-tested)
+src/fetcher.js     outbound fetch, direct or via an upstream proxy
+public/            the dashboard and the web-proxy portal (no build step)
 ```
 
 ## License
