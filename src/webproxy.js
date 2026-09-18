@@ -60,10 +60,49 @@ function rewriteCookies(setCookie) {
     .replace(/;\s*SameSite=None/gi, '; SameSite=Lax'));
 }
 
-/** The invisible client-side patch: catch URLs that only appear at runtime. */
+/**
+ * Injected into every proxied page: patch runtime URL builders so dynamic
+ * requests stay on the proxy, and mount a small navigation bar (home, back, an
+ * address box, collapse) in an isolated shadow root so the host page's CSS can
+ * neither touch it nor be touched by it.
+ */
 function clientPatch(target) {
   const T = JSON.stringify(target);
   const P = JSON.stringify(PREFIX);
+  const MARK = '<svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">'
+    + '<circle cx="16" cy="16" r="5.5" fill="#5b9dff"/>'
+    + '<circle cx="16" cy="16" r="12" fill="none" stroke="#ff8a4c" stroke-width="2.4" stroke-dasharray="30 14" stroke-linecap="round"/></svg>';
+  const CSS = ':host{all:initial}'
+    + '.wrap{position:fixed;top:0;left:0;right:0;z-index:2147483647;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}'
+    + '.bar{display:flex;align-items:center;gap:8px;height:44px;padding:0 10px;box-sizing:border-box;'
+    + 'background:rgba(9,12,22,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);'
+    + 'border-bottom:1px solid rgba(255,255,255,.1);color:#eef1f8;font-size:13px}'
+    + '.brand{display:flex;align-items:center;gap:7px;font-weight:650;color:#eef1f8;text-decoration:none;flex:none}'
+    + '.btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:none;'
+    + 'border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);'
+    + 'color:#cdd4ea;cursor:pointer;font-size:15px;line-height:1}'
+    + '.btn:hover{background:rgba(255,255,255,.1);color:#fff}'
+    + '.addr{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);'
+    + 'border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:0 10px;height:30px}'
+    + '.addr .dot{width:6px;height:6px;border-radius:50%;background:#5b9dff;flex:none}'
+    + '.addr input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#eef1f8;font:inherit;font-size:13px}'
+    + '.pill{position:fixed;top:10px;left:10px;z-index:2147483647;display:none;align-items:center;gap:7px;'
+    + 'padding:7px 12px;border-radius:999px;background:rgba(9,12,22,.86);border:1px solid rgba(255,255,255,.14);'
+    + 'color:#eef1f8;font:600 12px system-ui,sans-serif;cursor:pointer;'
+    + '-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}';
+  // ASCII-only SVG icons so the bar never depends on the host page's charset.
+  const BACK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+    + '<path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const MINUS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+    + '<path d="M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const HTML = '<div class="wrap"><div class="bar">'
+    + '<a class="brand" href="/" title="nebula home">' + MARK + 'nebula</a>'
+    + '<button class="btn" data-act="back" title="Back" aria-label="Back">' + BACK + '</button>'
+    + '<form class="addr" data-act="goform"><span class="dot"></span>'
+    + '<input type="text" spellcheck="false" aria-label="Address" placeholder="Search or enter a website"></form>'
+    + '<button class="btn" data-act="collapse" title="Hide bar" aria-label="Hide bar">' + MINUS + '</button>'
+    + '</div><button class="pill" data-act="expand" aria-label="Show nebula bar">' + MARK + 'nebula</button></div>';
+
   return `<script>(function(){var T=${T},P=${P};`
     + 'function px(u){try{if(u==null)return u;var s=String(u).trim();'
     + "if(s===''||/^(#|data:|blob:|javascript:|mailto:|tel:|about:)/i.test(s))return u;"
@@ -75,19 +114,29 @@ function clientPatch(target) {
     + 'try{u=px(u);}catch(e){}return xo.apply(this,[m,u].concat([].slice.call(arguments,2)));};'
     + 'var wo=window.open;window.open=function(u){try{u=px(u);}catch(e){}'
     + 'return wo.apply(this,[u].concat([].slice.call(arguments,1)));};'
-    + '})();</script>'
-    // A tiny, high-z-index way home that borrows nothing from the page's styles.
-    + '<a href="/" aria-label="Back to nebula home" '
-    + 'style="position:fixed;z-index:2147483647;left:16px;bottom:16px;display:inline-flex;'
-    + 'align-items:center;gap:8px;padding:8px 14px 8px 10px;'
-    + 'font:600 12.5px/1 system-ui,-apple-system,sans-serif;color:#eef1f8;text-decoration:none;'
-    + 'background:rgba(10,14,28,.82);border:1px solid rgba(255,255,255,.14);border-radius:999px;'
-    + '-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);'
-    + 'box-shadow:0 10px 26px -10px rgba(0,0,0,.75)">'
-    + '<svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">'
-    + '<circle cx="16" cy="16" r="5.5" fill="#5b9dff"/>'
-    + '<circle cx="16" cy="16" r="12" fill="none" stroke="#ff8a4c" stroke-width="2.4" stroke-dasharray="30 14" stroke-linecap="round"/>'
-    + '</svg>nebula</a>';
+    + `var CSS=${JSON.stringify(CSS)},BODY=${JSON.stringify(HTML)};`
+    + 'function bar(){try{'
+    + "if(document.getElementById('__nebula_host__'))return;"
+    + "var host=document.createElement('div');host.id='__nebula_host__';"
+    + 'var root=host.attachShadow?host.attachShadow({mode:"open"}):host;'
+    + "var st=document.createElement('style');st.textContent=CSS;root.appendChild(st);"
+    + "var w=document.createElement('div');w.innerHTML=BODY;while(w.firstChild)root.appendChild(w.firstChild);"
+    + '(document.body||document.documentElement).appendChild(host);'
+    + 'var DOC=document.documentElement;'
+    + "function pad(on){DOC.style.setProperty('padding-top',on?'44px':'0','important');}"
+    + "var barEl=root.querySelector('.bar'),pill=root.querySelector('.pill'),inp=root.querySelector('input');"
+    + 'try{inp.value=T;}catch(e){}'
+    + 'var hidden=false;try{hidden=localStorage.getItem("nebula-bar")==="0";}catch(e){}'
+    + "function apply(){if(hidden){barEl.style.display='none';pill.style.display='inline-flex';pad(false);}"
+    + "else{barEl.style.display='flex';pill.style.display='none';pad(true);}}apply();"
+    + "root.querySelector('[data-act=back]').onclick=function(){if(history.length>1)history.back();else location.href='/';};"
+    + 'root.querySelector("[data-act=collapse]").onclick=function(){hidden=true;try{localStorage.setItem("nebula-bar","0");}catch(e){}apply();};'
+    + 'pill.onclick=function(){hidden=false;try{localStorage.setItem("nebula-bar","1");}catch(e){}apply();};'
+    + "root.querySelector('[data-act=goform]').addEventListener('submit',function(e){e.preventDefault();"
+    + "var v=inp.value.trim();if(v)location.href='/go?q='+encodeURIComponent(v);});"
+    + '}catch(e){}}'
+    + "if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bar);else bar();"
+    + '})();</script>';
 }
 
 function errorPage(res, code, title, detail) {
@@ -202,6 +251,9 @@ export function createWebProxy(options = {}) {
           ? rewriteHtml(text, url, { inject: clientPatch(url) })
           : rewriteCss(text, url);
         delete headers['content-encoding'];
+        // We decoded to UTF-8 and re-encode as UTF-8; declare it so pages that
+        // omitted a charset (and our injected glyphs) always render correctly.
+        headers['content-type'] = isHtml ? 'text/html; charset=utf-8' : 'text/css; charset=utf-8';
         headers['content-length'] = Buffer.byteLength(out);
         res.writeHead(status, headers);
         res.end(out);

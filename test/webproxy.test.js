@@ -115,10 +115,11 @@ describe('fetching and rewriting', () => {
     assert.match(body, new RegExp(`src="${PREFIX}http://127.0.0.1:${originPort}/pic.png"`));
   });
 
-  test('injects the client patch and the home button', async () => {
+  test('injects the client patch and the navigation bar', async () => {
     const body = (await get(target('/page'))).body.toString();
     assert.match(body, /window\.fetch/);
-    assert.match(body, /Back to nebula/);
+    assert.match(body, /__nebula_host__/);
+    assert.match(body, /goform/);
   });
 
   test('decompresses gzip before rewriting, and drops the encoding header', async () => {
