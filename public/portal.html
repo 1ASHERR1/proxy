@@ -8,11 +8,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%235b9dff'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23ff8a4c' stroke-width='2.5' stroke-dasharray='34 14'/%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#070912; --bg-2:#0a0e1c;
-    --ink:#eef1f8; --ink-2:#aab1cc; --muted:#6b7192;
+    --bg:#070912; --ink:#eef1f8; --ink-2:#aab1cc; --muted:#6b7192;
     --panel:rgba(255,255,255,.045); --panel-2:rgba(255,255,255,.03);
     --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.06);
-    --blue:#5b9dff; --blue-deep:#3f7ae0; --ember:#ff8a4c; --violet:#9a86ff;
+    --blue:#5b9dff; --ember:#ff8a4c; --violet:#9a86ff;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
@@ -24,34 +23,23 @@
     display:flex; flex-direction:column; min-height:100%; overflow-x:hidden;
   }
 
-  /* Layered space backdrop: canvas stars + soft nebula glows + vignette. */
   #stars{position:fixed; inset:0; z-index:0; pointer-events:none;}
-  .aurora{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
-  .aurora::before,.aurora::after{
-    content:""; position:absolute; border-radius:50%; filter:blur(70px); opacity:.5;
-  }
-  .aurora::before{
-    width:60vw; height:60vw; left:-14vw; top:-22vw;
+  .aurora{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+    transform:translate(var(--px,0px),var(--py,0px)); transition:transform .4s ease-out;}
+  .aurora::before,.aurora::after{content:""; position:absolute; border-radius:50%; filter:blur(70px); opacity:.5;}
+  .aurora::before{width:60vw; height:60vw; left:-14vw; top:-22vw;
     background:radial-gradient(circle at 50% 50%, rgba(63,122,224,.42), transparent 62%);
-    animation:drift1 26s ease-in-out infinite alternate;
-  }
-  .aurora::after{
-    width:52vw; height:52vw; right:-16vw; top:-10vw;
+    animation:drift1 26s ease-in-out infinite alternate;}
+  .aurora::after{width:52vw; height:52vw; right:-16vw; top:-10vw;
     background:radial-gradient(circle at 50% 50%, rgba(255,138,76,.24), transparent 62%);
-    animation:drift2 32s ease-in-out infinite alternate;
-  }
-  .vignette{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-    background:radial-gradient(120% 90% at 50% -10%, transparent 40%, rgba(4,5,12,.75) 100%);
-  }
+    animation:drift2 32s ease-in-out infinite alternate;}
+  .vignette{position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% -10%, transparent 40%, rgba(4,5,12,.75) 100%);}
   @keyframes drift1{to{transform:translate(6vw,4vw) scale(1.08);}}
   @keyframes drift2{to{transform:translate(-5vw,3vw) scale(1.1);}}
 
-  header{
-    position:relative; z-index:2;
-    display:flex; align-items:center; justify-content:space-between;
-    max-width:960px; margin:0 auto; width:100%; padding:20px 24px;
-  }
+  header{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between;
+    max-width:960px; margin:0 auto; width:100%; padding:20px 24px;}
   .brand{display:flex; align-items:center; gap:10px;}
   .mark{width:26px; height:26px; flex:none;}
   .mark .core{fill:var(--blue);}
@@ -59,117 +47,87 @@
   .mark .ring2{stroke:var(--violet); opacity:.55; transform-origin:16px 16px; animation:spin 8s linear infinite reverse;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .brand b{font-size:17px; font-weight:700; letter-spacing:-.02em;}
-  .kbd-hint{
-    font-size:12px; color:var(--muted); display:inline-flex; gap:7px; align-items:center;
-  }
-  .kbd-hint kbd{
-    font-family:var(--mono); font-size:11px; color:var(--ink-2);
-    background:var(--panel); border:1px solid var(--line); border-bottom-width:2px;
-    border-radius:6px; padding:1px 6px; min-width:18px; text-align:center;
-  }
+  .kbd-hint{font-size:12px; color:var(--muted); display:inline-flex; gap:7px; align-items:center;}
+  .kbd-hint kbd{font-family:var(--mono); font-size:11px; color:var(--ink-2); background:var(--panel);
+    border:1px solid var(--line); border-bottom-width:2px; border-radius:6px; padding:1px 6px; min-width:18px; text-align:center;}
 
-  main{
-    position:relative; z-index:2; flex:1 0 auto;
-    width:100%; max-width:720px; margin:0 auto; padding:9vh 24px 48px;
-    display:flex; flex-direction:column; align-items:center; text-align:center;
-  }
+  main{position:relative; z-index:2; flex:1 0 auto; width:100%; max-width:720px; margin:0 auto;
+    padding:9vh 24px 48px; display:flex; flex-direction:column; align-items:center; text-align:center;
+    transition:opacity .4s ease, transform .5s ease;}
   @media (max-height:720px){ main{padding-top:5vh;} }
 
-  .eyebrow{
-    font-size:11.5px; font-weight:600; letter-spacing:.24em; text-transform:uppercase;
-    color:var(--blue); margin:0 0 18px;
-    display:inline-flex; align-items:center; gap:9px;
-  }
+  .eyebrow{font-size:11.5px; font-weight:600; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--blue); margin:0 0 18px; display:inline-flex; align-items:center; gap:9px;}
   .eyebrow::before,.eyebrow::after{content:""; width:22px; height:1px; background:linear-gradient(90deg,transparent,var(--line));}
   .eyebrow::before{background:linear-gradient(270deg,transparent,var(--line));}
-
-  h1{
-    margin:0 0 14px; font-size:clamp(32px,6.4vw,50px); line-height:1.04;
-    font-weight:720; letter-spacing:-.035em; text-wrap:balance;
-  }
-  h1 .accent{
-    background:linear-gradient(96deg,#7fb2ff,#c6a4ff 60%,#ffb185);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
+  h1{margin:0 0 14px; font-size:clamp(32px,6.4vw,50px); line-height:1.04; font-weight:720;
+    letter-spacing:-.035em; text-wrap:balance;}
+  h1 .accent{background:linear-gradient(96deg,#7fb2ff,#c6a4ff 60%,#ffb185);
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
   .lede{margin:0 0 32px; color:var(--ink-2); font-size:16px; max-width:46ch; text-wrap:pretty;}
 
   form{width:100%; max-width:600px;}
-  .bar{
-    display:flex; align-items:center; gap:8px; padding:8px 8px 8px 18px;
+  .bar{display:flex; align-items:center; gap:8px; padding:8px 8px 8px 18px;
     background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
     border:1px solid var(--line); border-radius:18px;
     box-shadow:0 24px 60px -28px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05);
-    transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
-  }
-  .bar:focus-within{
-    border-color:rgba(91,157,255,.65);
-    box-shadow:0 0 0 4px rgba(91,157,255,.16), 0 28px 66px -28px rgba(0,0,0,.95);
-    transform:translateY(-1px);
-  }
+    transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;}
+  .bar:focus-within{border-color:rgba(91,157,255,.65);
+    box-shadow:0 0 0 4px rgba(91,157,255,.16), 0 28px 66px -28px rgba(0,0,0,.95); transform:translateY(-1px);}
   .bar .glyph{flex:none; color:var(--muted); transition:color .18s;}
   .bar:focus-within .glyph{color:var(--blue);}
-  input[type=search]{
-    flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink);
-    font:inherit; font-size:17px; padding:12px 0;
-  }
+  input[type=search]{flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink);
+    font:inherit; font-size:17px; padding:12px 0;}
   input[type=search]::placeholder{color:var(--muted);}
   input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;}
-  .go{
-    flex:none; border:0; cursor:pointer; font:inherit; font-weight:650; font-size:15px; color:#08122a;
+  .go{flex:none; border:0; cursor:pointer; font:inherit; font-weight:650; font-size:15px; color:#08122a;
     background:linear-gradient(180deg,#7fb2ff,var(--blue)); padding:12px 22px; border-radius:12px;
-    display:inline-flex; align-items:center; gap:8px;
-    box-shadow:0 8px 20px -8px rgba(91,157,255,.7); transition:filter .15s, transform .05s;
-  }
-  .go:hover{filter:brightness(1.07);}
-  .go:active{transform:translateY(1px);}
+    display:inline-flex; align-items:center; gap:8px; box-shadow:0 8px 20px -8px rgba(91,157,255,.7);
+    transition:filter .15s, transform .05s;}
+  .go:hover{filter:brightness(1.07);} .go:active{transform:translateY(1px);}
   .go:focus-visible{outline:2px solid #fff; outline-offset:2px;}
 
-  .chips{display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-top:20px;}
-  .chip{
-    font-size:13px; color:var(--ink-2); text-decoration:none;
-    background:var(--panel-2); border:1px solid var(--line-2); padding:7px 13px; border-radius:999px;
-    display:inline-flex; align-items:center; gap:7px; transition:color .15s, border-color .15s, background .15s;
-  }
-  .chip:hover{color:var(--ink); border-color:rgba(91,157,255,.5); background:rgba(91,157,255,.08);}
+  /* Live read-out of what pressing Go will do. */
+  .intent{margin:14px 0 0; min-height:20px; font-size:13.5px; color:var(--muted);
+    display:inline-flex; align-items:center; gap:8px; transition:color .15s;}
+  .intent kbd{font-family:var(--mono); font-size:10.5px; color:var(--ink-2); background:var(--panel);
+    border:1px solid var(--line); border-radius:5px; padding:1px 6px;}
+  .intent .val{color:var(--ink); font-weight:560;}
+  .intent[data-mode=open]{color:var(--ink-2);} .intent[data-mode=open] .val{color:#9cc2ff;}
+  .intent[data-mode=search] .val{color:#ffc39a;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-top:22px;}
+  .chip{font-size:13px; color:var(--ink-2); text-decoration:none; background:var(--panel-2);
+    border:1px solid var(--line-2); padding:7px 13px; border-radius:999px; display:inline-flex;
+    align-items:center; gap:7px; transition:color .15s, border-color .15s, background .15s, transform .12s;}
+  .chip:hover{color:var(--ink); border-color:rgba(91,157,255,.5); background:rgba(91,157,255,.08); transform:translateY(-1px);}
   .chip .dot{width:5px; height:5px; border-radius:50%; background:var(--blue);}
   .chip.search .dot{background:var(--ember);}
 
-  .steps{
-    margin-top:64px; width:100%; max-width:640px;
-    display:grid; grid-template-columns:repeat(3,1fr); gap:14px; text-align:left;
-  }
-  .step{
-    position:relative; background:var(--panel-2); border:1px solid var(--line-2);
-    border-radius:15px; padding:17px 16px 16px;
-  }
-  .step .idx{
-    font-family:var(--mono); font-size:11px; color:var(--blue);
-    display:inline-flex; align-items:center; justify-content:center;
-    width:24px; height:24px; border-radius:7px; background:rgba(91,157,255,.12);
-    border:1px solid rgba(91,157,255,.28); margin-bottom:11px;
-  }
+  .steps{margin-top:60px; width:100%; max-width:640px; display:grid; grid-template-columns:repeat(3,1fr);
+    gap:14px; text-align:left;}
+  .step{position:relative; background:var(--panel-2); border:1px solid var(--line-2); border-radius:15px; padding:17px 16px 16px;}
+  .step .idx{font-family:var(--mono); font-size:11px; color:var(--blue); display:inline-flex; align-items:center;
+    justify-content:center; width:24px; height:24px; border-radius:7px; background:rgba(91,157,255,.12);
+    border:1px solid rgba(91,157,255,.28); margin-bottom:11px;}
   .step h3{margin:0 0 5px; font-size:14px; font-weight:640;}
   .step p{margin:0; font-size:12.5px; color:var(--ink-2); line-height:1.5;}
-  .step:not(:last-child)::after{
-    content:""; position:absolute; right:-8px; top:50%; width:8px; height:1px; background:var(--line);
-  }
-  @media (max-width:560px){
-    .steps{grid-template-columns:1fr; gap:10px;}
-    .step:not(:last-child)::after{display:none;}
-    main{padding-top:6vh;}
-    .kbd-hint{display:none;}
-  }
+  .step:not(:last-child)::after{content:""; position:absolute; right:-8px; top:50%; width:8px; height:1px; background:var(--line);}
+  @media (max-width:560px){.steps{grid-template-columns:1fr; gap:10px;} .step:not(:last-child)::after{display:none;} main{padding-top:6vh;} .kbd-hint{display:none;}}
 
-  footer{
-    position:relative; z-index:2; flex:none; width:100%; max-width:720px;
-    margin:0 auto; padding:28px 24px 36px; color:var(--muted); font-size:12px;
-    line-height:1.65; text-align:center;
-  }
+  footer{position:relative; z-index:2; flex:none; width:100%; max-width:720px; margin:0 auto;
+    padding:28px 24px 36px; color:var(--muted); font-size:12px; line-height:1.65; text-align:center;}
   footer .rule{height:1px; background:var(--line-2); margin:0 auto 18px; max-width:120px;}
   footer code{font-family:var(--mono); background:var(--panel); border:1px solid var(--line-2); padding:1px 6px; border-radius:5px; color:var(--ink-2);}
 
+  /* Warp transition on launch. */
+  body.warping main{opacity:0; transform:scale(.985) translateY(-6px);}
+  body.warping .vignette{opacity:.4; transition:opacity .5s ease;}
+
   @media (prefers-reduced-motion:reduce){
     .mark .ring,.mark .ring2,.aurora::before,.aurora::after{animation:none;}
+    .aurora{transition:none;}
+    body.warping main{opacity:1; transform:none;}
   }
 </style>
 </head>
@@ -211,6 +169,7 @@
         </button>
       </div>
     </form>
+    <p class="intent" id="intent" data-mode="empty" role="status" aria-live="polite"></p>
 
     <nav class="chips" aria-label="Try one">
       <a class="chip" href="/go?q=wikipedia.org"><span class="dot"></span>wikipedia.org</a>
@@ -234,57 +193,107 @@
   </footer>
 
   <script>
-    // "/" focuses the search box, the way a real search site behaves.
+    const form = document.querySelector('form');
     const q = document.getElementById('q');
+    const intent = document.getElementById('intent');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Mirror the server's query resolution so the reader knows what Go will do.
+    function classify(value) {
+      const t = value.trim();
+      if (!t) return { mode: 'empty' };
+      if (/^https?:\/\//i.test(t)) {
+        try { return { mode: 'open', label: new URL(t).host || t }; } catch { return { mode: 'open', label: t }; }
+      }
+      if (!/\s/.test(t) && /^[\w-]+(\.[\w-]+)+/.test(t)) return { mode: 'open', label: t };
+      return { mode: 'search', label: t };
+    }
+    function paintIntent() {
+      const { mode, label } = classify(q.value);
+      intent.dataset.mode = mode;
+      if (mode === 'empty') { intent.innerHTML = '<span>Type a website, or anything to search</span>'; return; }
+      const key = '<kbd>&#8629;</kbd>';
+      const safe = label.replace(/</g, '&lt;');
+      intent.innerHTML = mode === 'open'
+        ? key + '<span>Open <span class="val">' + safe + '</span></span>'
+        : key + '<span>Search the web for <span class="val">&ldquo;' + safe + '&rdquo;</span></span>';
+    }
+    q.addEventListener('input', paintIntent);
+    paintIntent();
+
     addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
     });
 
-    // A quiet drifting starfield for depth. Respects reduced-motion and pauses when hidden.
+    // Starfield: quiet drift at rest, a hyperspace warp on launch.
     const canvas = document.getElementById('stars');
     const ctx = canvas.getContext('2d');
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let stars = [];
-    let dpr = 1;
+    let stars = [], dpr = 1, warping = false, warpStart = 0;
 
     function seed() {
       dpr = Math.min(devicePixelRatio || 1, 2);
-      canvas.width = innerWidth * dpr;
-      canvas.height = innerHeight * dpr;
-      const count = Math.min(120, Math.round((innerWidth * innerHeight) / 14000));
+      canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+      const count = Math.min(140, Math.round((innerWidth * innerHeight) / 13000));
       stars = Array.from({ length: count }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: (Math.random() * 1.3 + 0.3) * dpr,
-        a: Math.random() * 0.5 + 0.2,
-        tw: Math.random() * 0.02 + 0.004,
-        vy: (Math.random() * 0.14 + 0.03) * dpr,
-        ph: Math.random() * Math.PI * 2,
+        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        r: (Math.random() * 1.3 + 0.3) * dpr, a: Math.random() * 0.5 + 0.2,
+        tw: Math.random() * 0.02 + 0.004, vy: (Math.random() * 0.14 + 0.03) * dpr, ph: Math.random() * Math.PI * 2,
       }));
     }
 
-    function frame() {
+    function frame(now) {
+      if (warping) return warp(now);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (const s of stars) {
         s.ph += s.tw;
-        const alpha = s.a + Math.sin(s.ph) * 0.18;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(200,215,255,' + Math.max(0, alpha).toFixed(3) + ')';
-        ctx.fill();
-        if (!reduce) {
-          s.y += s.vy;
-          if (s.y > canvas.height + 2) { s.y = -2; s.x = Math.random() * canvas.width; }
-        }
+        const alpha = Math.max(0, s.a + Math.sin(s.ph) * 0.18);
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(200,215,255,' + alpha.toFixed(3) + ')'; ctx.fill();
+        if (!reduce) { s.y += s.vy; if (s.y > canvas.height + 2) { s.y = -2; s.x = Math.random() * canvas.width; } }
       }
       if (!reduce && !document.hidden) requestAnimationFrame(frame);
     }
 
-    seed();
-    frame();
-    let t;
-    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { seed(); if (reduce) frame(); }, 150); });
-    if (!reduce) document.addEventListener('visibilitychange', () => { if (!document.hidden) frame(); });
+    // Stars streak away from the centre, accelerating, then we navigate.
+    const WARP_MS = 560;
+    function warp(now) {
+      const t = now - warpStart;
+      const cx = canvas.width / 2, cy = canvas.height / 2;
+      ctx.fillStyle = 'rgba(7,9,18,0.30)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const boost = 0.04 + (t / WARP_MS) * 0.22;
+      ctx.lineCap = 'round';
+      for (const s of stars) {
+        const nx = cx + (s.x - cx) * (1 + boost), ny = cy + (s.y - cy) * (1 + boost);
+        ctx.strokeStyle = 'rgba(160,195,255,' + Math.min(1, 0.35 + t / WARP_MS).toFixed(3) + ')';
+        ctx.lineWidth = s.r;
+        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(nx, ny); ctx.stroke();
+        s.x = nx; s.y = ny;
+        if (nx < -20 || nx > canvas.width + 20 || ny < -20 || ny > canvas.height + 20) {
+          s.x = cx + (Math.random() - 0.5) * 60; s.y = cy + (Math.random() - 0.5) * 60;
+        }
+      }
+      if (t < WARP_MS) requestAnimationFrame(frame); else form.submit();
+    }
+
+    form.addEventListener('submit', (e) => {
+      if (reduce || !q.value.trim()) return;          // no value → let the browser handle it
+      e.preventDefault();
+      document.body.classList.add('warping');
+      warping = true; warpStart = performance.now();
+      requestAnimationFrame(frame);
+    });
+
+    // A touch of parallax so the nebula sits behind the content.
+    const aurora = document.querySelector('.aurora');
+    if (!reduce) addEventListener('pointermove', (e) => {
+      const x = (e.clientX / innerWidth - 0.5) * 18, y = (e.clientY / innerHeight - 0.5) * 18;
+      aurora.style.setProperty('--px', x.toFixed(1) + 'px');
+      aurora.style.setProperty('--py', y.toFixed(1) + 'px');
+    });
+
+    seed(); frame();
+    let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { seed(); if (reduce) frame(); }, 150); });
+    if (!reduce) document.addEventListener('visibilitychange', () => { if (!document.hidden && !warping) frame(); });
   </script>
 </body>
 </html>

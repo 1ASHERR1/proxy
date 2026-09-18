@@ -1,17 +1,14 @@
 {
-  "name": "nebula-proxy",
+  "name": "nebula",
   "version": "1.0.0",
-  "description": "Zero-dependency proxies: an HTTP/HTTPS forward proxy with a live dashboard, and a web (URL-rewriting) proxy with a search box.",
+  "description": "A zero-dependency web proxy — a website with a search box that opens pages through its own address.",
   "type": "module",
   "bin": {
-    "nebula": "./bin/nebula.js",
     "unblock": "./bin/unblock.js"
   },
-  "main": "./src/server.js",
+  "main": "./src/webproxy.js",
   "scripts": {
-    "start": "node bin/nebula.js",
-    "dev": "node bin/nebula.js --verbose",
-    "unblock": "node bin/unblock.js",
+    "start": "node bin/unblock.js",
     "test": "node --test test/*.test.js"
   },
   "engines": {
@@ -19,12 +16,10 @@
   },
   "keywords": [
     "proxy",
-    "http-proxy",
-    "forward-proxy",
     "web-proxy",
     "url-rewriting",
-    "dashboard",
-    "observability"
+    "unblocker",
+    "cgi-proxy"
   ],
   "license": "MIT",
   "dependencies": {}

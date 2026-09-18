@@ -109,6 +109,13 @@ describe('rewriteHtml', () => {
     const m = rewriteHtml('<a href="mailto:a@b.c">mail</a>', BASE);
     assert.match(m, /href="mailto:a@b.c"/);
   });
+
+  test('rewrites a page\'s own <base href> through the proxy', () => {
+    // A left-alone <base> would resolve the injected home link (and any missed
+    // relative URL) against the origin site; proxying it keeps them on nebula.
+    const m = rewriteHtml('<head><base href="https://example.com/app/"></head>', BASE);
+    assert.match(m, new RegExp(`<base href="${PREFIX}https://example.com/app/"`));
+  });
 });
 
 describe('resolveQuery', () => {
